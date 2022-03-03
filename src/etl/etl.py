@@ -28,7 +28,7 @@ class Etl:
         """
         ilv_core_x = ilv_core.groupby(['address', 'year', 'month']).amount.sum().reset_index()
         ilv_eth_lp_x = ilv_eth_lp.groupby(['address', 'year', 'month']).amount.sum().reset_index()
-        ilv_x = ilv.groupby(['address', 'year', 'month']).value.sum().reset_index()
+        ilv_x = ilv.groupby(['address']).amount.sum().reset_index()
 
         return ilv_core_x, ilv_eth_lp_x, ilv_x
               
