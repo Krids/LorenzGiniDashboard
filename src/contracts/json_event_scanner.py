@@ -18,7 +18,7 @@ class JSONifiedState(EventScannerState):
 
         def __init__(self):
             self.state = None
-            self.fname = os.path.join(DATA_PATH, "ILV-Core (with_transfer).json")
+            self.fname = os.path.join(DATA_PATH, "ILV-Transfer.json")
             # How many second ago we saved the JSON file
             self.last_save = 0
 

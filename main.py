@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #     "AXIE Flash": "0x099A3B242dceC87e729cEfc6157632d7D5F1c4ef",
     #     "SNX Flash": "0x9898d72c2901D09E72A426d1c24b6ab90eB100e7"
     # }
-    RCC_ADDRESS = "0x25121EDDf746c884ddE4619b573A7B10714E2a36"
+    RCC_ADDRESS = "0x767FE9EDC9E0dF98E07454847909b5E959D7ca0E"
 
     # Reduced ERC-20 ABI, only Transfer event
     with open(os.path.join(DOC_PATH, 'abi.json'), 'r') as f:
@@ -75,7 +75,8 @@ if __name__ == "__main__":
             w3=w3,
             contract=ERC20,
             state=state,
-            events=[ERC20.events.Staked, ERC20.events.Unstaked, ERC20.events.Transfer],
+            # events=[ERC20.events.Staked, ERC20.events.Unstaked, ERC20.events.Transfer],
+            events=[ERC20.events.Transfer],
             filters={"address": RCC_ADDRESS},
             # How many maximum blocks at the time we request from JSON-RPC
             # and we are unlikely to exceed the response size limit of the JSON-RPC server

@@ -55,7 +55,7 @@ class EventScanner:
         self.filters = filters
 
         # Our JSON-RPC throttling parameters
-        self.min_scan_chunk_size = 2000  # 12 s/block = 120 seconds period
+        self.min_scan_chunk_size = 10000  # 12 s/block = 120 seconds period
         self.max_scan_chunk_size = max_chunk_scan_size
         self.max_request_retries = max_request_retries
         self.request_retry_seconds = request_retry_seconds

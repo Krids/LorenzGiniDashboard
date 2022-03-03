@@ -9,4 +9,6 @@ import os
 
 BASE_PATH = os.path.abspath('.')
 DATA_PATH = os.path.join(BASE_PATH, 'data')
+DATA_RAW = os.path.join(DATA_PATH, 'raw')
+DATA_PROCESSED = os.path.join(DATA_PATH, 'processed')
 DOC_PATH = os.path.join(BASE_PATH, 'docs')

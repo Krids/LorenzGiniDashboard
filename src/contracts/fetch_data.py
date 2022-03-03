@@ -13,14 +13,15 @@ class FetchData:
     def __init__(self) -> None:
         with open(os.path.join(DOC_PATH, 'abi.json'), 'r') as f:
             self.abi = json.load(f)    
-        self.hard_block_start = 12736883
+        self.hard_block_start = 0
         self.hard_block_end = 14307725
-        self.block_window_size = 2000
+        self.block_window_size = 10000
         provider_url = "https://eth-mainnet.alchemyapi.io/v2/uanCKV5LOP7NtaVUos3qtH-R-V1xy-A3"
         self.w3 = Web3(Web3.HTTPProvider(provider_url))
         self.pools = {
-        "ILV Core": "0x25121EDDf746c884ddE4619b573A7B10714E2a36",
-        "ILV-ETH LP": "0x8B4d8443a0229349A9892D4F7CbE89eF5f843F72",
+        # "ILV Core": "0x25121EDDf746c884ddE4619b573A7B10714E2a36",
+        # "ILV-ETH LP": "0x8B4d8443a0229349A9892D4F7CbE89eF5f843F72",
+        "ILV": "0x767FE9EDC9E0dF98E07454847909b5E959D7ca0E",
         # "LINK Flash": "0xc759C6233e9C1095328D29CffF319780b28CecD8",
         # "XYZ Flash": "0x4C6997D462b0146fA54b747065411C1Ba0248595",
         # "AXIE Flash": "0x099A3B242dceC87e729cEfc6157632d7D5F1c4ef",
@@ -28,8 +29,9 @@ class FetchData:
     }
     
     def get_relevant_event_logs(self):
-        self.stake_events = self.make_events_df_all_pools(event_name="Staked")
-        self.unstake_events = self.make_events_df_all_pools(event_name="Unstaked")
+        self.transfer_events = self.make_events_df_all_pools(event_name="Transfer")
+        # self.stake_events = self.make_events_df_all_pools(event_name="Staked")
+        # self.unstake_events = self.make_events_df_all_pools(event_name="Unstaked")
         # self.yield_claim_events = self.make_events_df_all_pools(event_name="YieldClaimed")
 
     def make_events_df_all_pools(self, event_name):
@@ -104,9 +106,11 @@ class FetchData:
                 }
             elif event_name == "Transfer":
                 el = {
+                    "from": data[i]["args"]["from"],
                     "to": data[i]["args"]["to"],
                     "blockNumber": data[i]["blockNumber"],
                     "txhash": data[i]["transactionHash"].hex(),
+                    "value": data[i]['args']['value'],
                     "Pool": pool_label
                 }
             else:
