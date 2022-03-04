@@ -5,11 +5,13 @@ Name: Felipe Lana Machado
 Date: 02/03/2022
 """
 
+from cProfile import label
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import plotly.express as px
+import plotly.graph_objects as go
 from plotly.graph_objs import Data, Figure
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -37,13 +39,14 @@ class LorenzCurve:
         "y": [0, 1]
         }
         data = Data([trace1, trace2])
-        txt = str(np.round(self.gini(plt_vals),2))
+        txt = str(np.round(self.gini(plt_vals, norm=True),2))
         layout = {
         "title": f"Lorenz Curve - GINI: {txt}", 
         "xaxis": {"title": "Fraction of hodlers"}, 
         "yaxis": {"title": "Fraction of ILV owned"}, 
         "autosize": True
         }
+        
         fig = Figure(data=data, layout=layout)
         fig.show()
 
@@ -54,37 +57,95 @@ class LorenzCurve:
             df (pd.DataFrame): Dataframe containing the month variable and the amount variable wich is going to
             be used to plot the chart.
         """
-        list_of_traces = []
-        for i, month in enumerate(df.month.unique()):
-            lst = list(df.loc[(df['amount'] > 0) & (df['month'] == month)].amount)
+        layout = {
+            "title": f"Lorenz Curve", 
+            "xaxis": {"title": "Fraction of hodlers"}, 
+            "yaxis": {"title": "Fraction of ILV owned"}, 
+            "autosize": True
+        }
+
+        # Create figure
+        fig = go.Figure(layout=layout)
+
+        gini_list = []
+        # Add traces, one for each slider step
+        for step in np.arange(7, 13, 1):
+            if step < 6:
+                lst = list(df.loc[(df['amount'] > 0) & (df['month'] <= step)].amount)
+            else:
+                lst = list(df.loc[(df['amount'] > 0) & (df['month'] <= step) & (df['month'] >= 6)].amount)
+
             lst = np.sort(np.array(lst))       
-            # normalisation and summation
             vals = lst.cumsum() / lst.sum()
-            # add (0,0) to values
             plt_vals = np.insert(vals, 0, 0)
+            gini_list.append(str(np.round(self.gini(plt_vals, norm=True),2)))
             trace = {
-                "name": f"Month: {month}", 
+                "name": f"Month: {df.loc[df['month'] == step].iloc[0]['month_name']} ({step})", 
                 "x": np.linspace(0.0, 1.0, plt_vals.size),
                 "y": plt_vals
                 }
-            txt = str(np.round(self.gini(plt_vals),2))
-            print(txt)
-            list_of_traces.append(trace)
+
+            fig.add_trace(trace)
+
+        for step in np.arange(1, 4, 1):
+            if step < 6:
+                lst = list(df.loc[(df['amount'] > 0) & (df['month'] <= step)].amount)
+            else:
+                lst = list(df.loc[(df['amount'] > 0) & (df['month'] <= step) & (df['month'] >= 6)].amount)
+
+            lst = np.sort(np.array(lst))       
+            vals = lst.cumsum() / lst.sum()
+            plt_vals = np.insert(vals, 0, 0)
+            gini_list.append(str(np.round(self.gini(plt_vals, norm=True),2)))
+            trace = {
+                "name": f"Month: {df.loc[df['month'] == step].iloc[0]['month_name']} ({step})", 
+                "x": np.linspace(0.0, 1.0, plt_vals.size),
+                "y": plt_vals
+                }
+
+            fig.add_trace(trace)
 
         trace2 = {
-        "name": "Line of equality", 
-        "x": [0, 1], 
-        "y": [0, 1]
+            "name": "Line of equality", 
+            "x": [0, 1], 
+            "y": [0, 1]
         }
-        data = Data([*list_of_traces, trace2])
-        
-        layout = {
-        "title": f"Lorenz Curve", 
-        "xaxis": {"title": "Fraction of hodlers"}, 
-        "yaxis": {"title": "Fraction of ILV owned"}, 
-        "autosize": True
+        fig.add_trace(trace2)
+
+        fake_dict = {
+            0: "July",
+            1: "August",
+            2: "September",
+            3: "October",
+            4: "November",
+            5: "December",
+            6: "January",
+            7: "February",
+            8: "March"
         }
-        fig = Figure(data=data, layout=layout)
+
+        steps = []
+        for i in range(len(fig.data)-1):
+            step = dict(
+                label=f"{fake_dict.get(i)}",
+                method="update",
+                args=[{"visible": [False] * (len(fig.data))},
+                    {"title": str(i) + " Months since the release"}], 
+            )
+            step["args"][0]["visible"][i] = True  
+            step["args"][0]["visible"][len(fig.data)-1] = True  
+            steps.append(step)
+
+        sliders = [dict(
+            active=0,
+            currentvalue={"prefix": "Months since release: "},
+            steps=steps
+        )]
+
+        fig.update_layout(
+            sliders=sliders
+        )
+
         fig.show()
 
     def lorenz_matplotlib(self, plot=True, verbose=False) -> None:
@@ -117,7 +178,7 @@ class LorenzCurve:
             if verbose:
                 plt.fill_between(np.linspace(0.0, 1.0, plt_vals.size),np.linspace(0.0, 1.0, plt_vals.size),
                                  plt_vals, color="lightsteelblue")
-                txt = str(np.round(self.gini(plt_vals),2))
+                txt = str(np.round(self.gini(plt_vals, norm=True),2))
                 plt.text(0.48, 0.4, f"Gini = {txt}", size="large")
             plt.show()
                 
